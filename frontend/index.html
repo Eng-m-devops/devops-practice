@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام إدارة البيانات والزيارات | Node.js + Redis + PostgreSQL</title>
+  <meta name="description" content="تطبيق بسيط بدون دوكر يربط بين Node.js و Redis و PostgreSQL لعرض عدد الزيارات وتخزين المستخدمين.">
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="background-globes">
+    <div class="globe globe-1"></div>
+    <div class="globe globe-2"></div>
+    <div class="globe globe-3"></div>
+  </div>
+
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-icon">
+          <i class="fa-solid fa-server"></i>
+        </div>
+        <div>
+          <h1>لوحة تحكم التطبيق</h1>
+        </div>
+      </div>
+      
+      <!-- System Connection Statuses -->
+      <div class="status-pills">
+        <div class="status-pill" id="redisStatus">
+          <span class="status-dot"></span>
+          <i class="fa-solid fa-bolt"></i>
+          <span>Redis: <strong id="redisStatusText">جاري الفحص...</strong></span>
+        </div>
+        <div class="status-pill" id="postgresStatus">
+          <span class="status-dot"></span>
+          <i class="fa-solid fa-database"></i>
+          <span>PostgreSQL: <strong id="postgresStatusText">جاري الفحص...</strong></span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="dashboard-grid">
+
+      <!-- Visits Counter Card (Redis) -->
+      <section class="card visits-card">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="icon-badge redis-badge">
+              <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div>
+              <h2>عداد الزيارات</h2>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-icon" id="btnRefreshVisits" title="تحديث القراءة">
+            <i class="fa-solid fa-rotate-right"></i>
+          </button>
+        </div>
+
+        <div class="visits-display">
+          <div class="counter-number" id="visitCount">0</div>
+          <span class="counter-label">إجمالي الزيارات المسجلة</span>
+        </div>
+
+        <div class="card-actions">
+          <div class="auto-visit-note">
+            <i class="fa-solid fa-arrows-rotate"></i>
+            <span>يتم احتساب الزيارات تلقائياً عند كل زيارة أو تحديث للصفحة</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- User Registration Form Card (PostgreSQL) -->
+      <section class="card user-form-card">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="icon-badge pg-badge">
+              <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <div>
+              <h2>إضافة مستخدم</h2>
+            </div>
+          </div>
+        </div>
+
+        <form id="addUserForm" class="user-form">
+          <div class="form-group">
+            <label for="username">اسم المستخدم</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-user input-icon"></i>
+              <input type="text" id="username" placeholder="مثال: ahmed_ali" required autofocus>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email">البريد الإلكتروني</label>
+            <div class="input-wrapper">
+              <i class="fa-solid fa-envelope input-icon"></i>
+              <input type="email" id="email" placeholder="example@domain.com" required>
+            </div>
+          </div>
+
+          <div id="formNotification" class="notification hidden"></div>
+
+          <button type="submit" class="btn btn-accent btn-lg" id="btnSubmitUser">
+            <i class="fa-solid fa-floppy-disk"></i>
+            حفظ البيانات
+          </button>
+        </form>
+      </section>
+
+      <!-- Users List Card (PostgreSQL) -->
+      <section class="card users-list-card full-width">
+        <div class="card-header">
+          <div class="card-title">
+            <div class="icon-badge list-badge">
+              <i class="fa-solid fa-users"></i>
+            </div>
+            <div>
+              <h2>قائمة المستخدمين المسجلين</h2>
+            </div>
+          </div>
+          <div class="header-right">
+            <span class="user-count-badge" id="userCountBadge">0 مستخدمين</span>
+            <button class="btn btn-secondary btn-icon" id="btnRefreshUsers" title="تحديث القائمة">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>اسم المستخدم</th>
+                <th>البريد الإلكتروني</th>
+                <th>تاريخ التسجيل</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr>
+                <td colspan="4" class="empty-state">جاري تحميل البيانات...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>نظام إدارة البيانات والزيارات</p>
+    </footer>
+  </div>
+
+  <script src="src/app.js"></script>
+</body>
+</html>

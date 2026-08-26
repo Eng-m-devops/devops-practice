@@ -1,0 +1,6 @@
+{
+  "name": "enterprise-devops-frontend",
+  "version": "1.0.0",
+  "description": "Frontend static app",
+  "type": "module"
+}
