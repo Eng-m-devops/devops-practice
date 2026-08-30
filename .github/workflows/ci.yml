@@ -19,13 +19,13 @@ jobs:
           fetch-depth: 0
         
       - name: Set up JDK 21
-        uses: actions/setup-java@8df1039653063d1b93756f70973663fc8920da6f # v4.5.0
+        uses: actions/setup-java@8df1039502a15bceb9433410b1a100fbe190c53b # v4.5.0
         with:
           distribution: 'temurin'
           java-version: '21'  
       
       - name: Run SonarQube Analysis
-        uses: SonarSource/sonarqube-scan-action@6b69324d2ef0775d710b7f837d9eb0155b9e0750 # v3.0.0
+        uses: SonarSource/sonarqube-scan-action@884b79409bbd464b2a59edc326a4b77dc56b2195 # v3.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}     
@@ -39,17 +39,16 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994febfe312 # v3.7.1
+        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994febfe349 # v3.7.1
 
       - name: Login to Docker Hub
-        uses: docker/login-action@327cd5a69de6c009b2ce714bf89c6f37572e7b29 # v3.3.0
-        
+        uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3.3.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build Backend Image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.4.0
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
         with:
           context: ./backend
           push: false
@@ -57,7 +56,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Trivy Vulnerability Scan
-        uses: aquasecurity/trivy-action@18f25b0d83094352f194889f9256821d9208b898 # v0.28.0
+        uses: aquasecurity/trivy-action@915b19bbe73b92a6cf82a1bc12b087c9a19a5fe2 # v0.28.0
         with:
           scan-type: 'fs'
           scan-ref: '.'
@@ -72,10 +71,11 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994febfe312 # v3.7.1
+        uses: docker/setup-buildx-action@c47758b77c9736f4b2ef4073d4d51994febfe349 # v3.7.1
 
       - name: Build Frontend Image
-        uses: docker/build-push-action@4a13e500e55cf31b7a5d59a38ab2040ab0f42f56 # v5.4.0
+        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+
         with:
           context: ./frontend
           push: false
