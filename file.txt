@@ -1,0 +1,29 @@
+🚀 سعيد بمشاركة أحدث مشاريعي في معمارية DevOps & DevSecOps الحديثة للمؤسسات البرمجية!
+
+قم بتصميم وبناء بيئة متكاملة تدمج بين الأتمتة الكاملة (CI/CD)، الحماية والأمان المستمر (DevSecOps)، والبنية التحتية المعزولة باستخدام الحاويات.
+
+🔥 أهم التقنيات والمعايير المطبقة في المشروع:
+
+1️⃣ خط بناء ونشر آلي (GitHub Actions CI/CD):
+- أتمتة اختبار وبناء الفرونت إند والباك إند بالتوازي.
+- تطبيق الحماية ضد هجمات سلاسل التوريد (Supply Chain Attack Protection) عبر تثبيت التبعيات بأرقام مراجعة دقيقة.
+
+2️⃣ تحليل وتأمين الكود والحاويات (DevSecOps):
+- فحص الكود الساكن بواسطة SonarQube والوصول لجودة 100% وحل كافة الـ Security Hotspots.
+- فحص ثغرات الحاويات والنظام آلياً في كل Push باستخدام Trivy Vulnerability Scanner.
+
+3️⃣ الحماية وتجهيز الحاويات (Docker & Hardening):
+- بناء حاويات متعددة المراحل (Multi-Stage Builds) لتقليل حجم الصور وسرعة التشغيل.
+- تشغيل خادم Express بدون صلاحيات root فائقة (USER node).
+- تعزيز حماية خوادم Nginx و Express وتعطيل رؤوس كشف تقنيات الخادم.
+- تطبيق سلامة الموارد المتقاطعة (SRI Integrity) والتوافق مع معايير التباين البصري WCAG AA.
+
+4️⃣ البنية التحتية وقواعد البيانات:
+- Node.js & Express.js REST API + Nginx Frontend (Glassmorphic UI).
+- PostgreSQL لتخزين البيانات + Redis للتخزين المؤقت والعداد السريع.
+- إضافة نمط الذكاء الاحتياطي (Memory Fallback Mode) لضمان عدم انهيار الخدمة إطلاقاً.
+- إدارة البنية التحتية كرمز (Infrastructure as Code - Terraform).
+
+💻 رابط المستودع والتفاصيل في الـ README!
+
+#DevOps #DevSecOps #Docker #GitHubActions #SonarQube #Trivy #Nodejs #Nginx #PostgreSQL #Redis #CyberSecurity #SoftwareEngineering #CloudArchitecture

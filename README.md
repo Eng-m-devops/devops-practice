@@ -1,102 +1,119 @@
-# تطبيق خفيف جداً - Backend + Frontend + Redis + PostgreSQL (بدون Docker)
+# Enterprise DevOps & DevSecOps Architecture
 
-تطبيق ويب بسيط وعصري مكون من خلفية (Backend) واجهة أمامية (Frontend) يتعامل مع **Redis** لتسجيل عدد الزيارات و **PostgreSQL** لتخزين بيانات المستخدمين **دون الحاجة لـ Docker**.
+![Enterprise DevOps Architecture](devops_architecture.png)
 
----
-
-## 🌟 مميزات التطبيق
-
-1. **الواجهة الأمامية (Frontend)**:
-   - تصميم عصري بلمسات زجاجية (Glassmorphism) وواجهة باللغة العربية (RTL).
-   - عرض فوري لعدد الزيارات المسجلة في Redis مع إمكانية إضافة زيارات جديدة بنقرة زر.
-   - نموذج إضافة مستخدم جديد وحفظه في PostgreSQL، وعرض قائمة المستخدمين مباشرة.
-   - مؤشرات حالة فورية تفحص الاتصال بـ PostgreSQL و Redis.
-
-2. **الخلفية (Backend)**:
-   - مبني بواسطة **Node.js** و **Express.js**.
-   - الاتصال بـ Redis باستخدام مكتبة `redis` واستخدام أمر `INCR` للزيارات.
-   - الاتصال بـ PostgreSQL باستخدام `pg` مع إنشاء جدول `users` تلقائياً عند التشغيل.
-   - نظام نمط الاحتياط الذكي (Fallback Mode): في حال عدم وجود قواعد البيانات تعمل حالياً، يستمر التطبيق بالعمل في الذاكرة لتجربة الواجهة دون أن ينهار الخادم.
+تطبيق ويب متكامل مصمم وفق أحدث معايير **DevOps** و **DevSecOps** للمؤسسات. يشتمل المشروع على بنية تحتية مؤتمتة بالكامل، خطوط بناء ونشر مستمرة (CI/CD)، فحص الأمان وفحص الجودة البرمجية والتأكد من خلو المشروع من ثغرات الحماية.
 
 ---
 
-## 📁 هيكلية المشروع
+## 🛡️ أبرز إنجازات DevSecOps & Security Hardening
 
-```
+- **خط بناء ونشر مؤتمت (GitHub Actions CI/CD)**: خطوط عمل مؤتمتة بالتوازي تضمن بناء واختبار كافة مكونات النظام.
+- **تثبيت التبعيات الأمنية (Action Pinning)**: تثبيت كافة أفعال GitHub Actions بإصدارات محددة لمنع هجمات سلاسل التوريد (Supply Chain Attacks).
+- **تحليل الكود الساكن (SonarQube Analysis)**: فحص شامل وجودة كود عالية 100% مع حل جميع الملاحظات والـ Security Hotspots.
+- **فحص الثغرات الأمنية (Trivy Security Scanning)**: فحص أمني آلي للملفات وملفات Docker والحزم لمعالجة ثغرات النظام والحزم قبل النشر.
+- **حماية الحاويات (Docker Hardening)**:
+  - استخدام بنية المكونات متعددة المراحل (Multi-stage builds) لتقليل حجم الصور.
+  - تشغيل الخدمات بمستخدمين غير متميزين (Unprivileged `USER node`).
+  - إيقاف تشغيل سكريبتات دورة الحياة أثناء تثبيت الحزم (`npm ci --ignore-scripts`).
+  - نسخ الملفات المحددة بدقة لتجنب تسريب أي ملفات حساسة.
+- **حماية خادم Web & Express**:
+  - تعطيل رؤوس كشف تكنولوجيا الخادم (`app.disable('x-powered-by')`).
+  - حماية الأصول الأمامية باستخدام سلامة الموارد المتقاطعة (**Subresource Integrity - SRI**).
+  - التوافق مع معايير الوصول الشامل والتباين البصري (**WCAG AA Contrast Compliance**).
+
+---
+
+## 🏗️ البنية التحتية والتقنيات المستخدمة
+
+- **الواجهة الأمامية (Frontend)**: Nginx (Alpine-Slim) + HTML5 / CSS3 (Glassmorphism UI) + Vanilla JavaScript (RTL).
+- **الخلفية (Backend API)**: Node.js 20 + Express.js + RESTful APIs.
+- **قواعد البيانات والتخزين المؤقت**:
+  - **PostgreSQL**: لتخزين بيانات المستخدمين بشكل دائم.
+  - **Redis**: لتخزين عداد الزيارات التفاعلي وإدارته بسرعة فائقة.
+  - **Memory Fallback Mode**: نمط احتياطي تلقائي يضمن استمرار عمل التطبيق في الذاكرة في حال انقطاع الاتصال بقواعد البيانات دون انهيار الخادم.
+- **الأتمتة والبيئة التحتية كرمز (IaC)**:
+  - **Docker & Docker Compose**: بيئات تطوير وإنتاج معزولة.
+  - **Terraform**: لإدارة البنية التحتية السحابية بشكل مؤتمت (`terraform/`).
+
+---
+
+## 📁 هيكلية المشروع (Project Architecture)
+
+```text
 .
+├── .github/
+│   └── workflows/
+│       └── ci.yml                 # خط البناء والنشر الآلي (GitHub Actions + SonarQube + Trivy)
 ├── backend/
-│   ├── package.json          # حزم وتابعات Node.js (express, pg, redis, cors, dotenv)
-│   ├── .env.example          # نموذج إعدادات البيئة لبيانات الاتصال
-│   ├── .env                  # ملف إعدادات البيئة الفعلي
+│   ├── Dockerfile                 # بناء حاوية الباك إند (Multi-stage node:20-alpine)
+│   ├── package.json               # حزم وتابعات Node.js
 │   └── src/
 │       ├── config/
-│       │   ├── postgres.js   # إعداد الاتصال وإنشاء جدول PostgreSQL
-│       │   └── redis.js      # إعداد عميل Redis والدوال المساعدة
-│       └── server.js         # خادم Express ومسارات الـ API
+│       │   ├── postgres.js        # الاتصال بـ PostgreSQL وإنشاء الجداول
+│       │   └── redis.js           # الاتصال بـ Redis وإدارة العداد
+│       └── server.js              # خادم Express ومسارات الـ REST API
 ├── frontend/
-│   ├── index.html            # هيكل الواجهة الأمامية
-│   ├── style.css             # التصميم وتنسيقات CSS العصري
+│   ├── Dockerfile                 # بناء حاوية الفرونت إند (Nginx Alpine-slim)
+│   ├── nginx.conf                 # إعدادات خادم Nginx
+│   ├── index.html                 # هيكل الواجهة الأمامية مع حماية SRI
+│   ├── style.css                  # التنسيقات البصرية العصري المعتمدة على التباين المريح
 │   └── src/
-│       └── app.js            # برمجية JavaScript للاتصال بالـ APIs وتحديث الواجهة
-├── package.json              # ملف الأوامر الرئيسي للمشروع
-└── README.md                 # دليل التشغيل والاستخدام
+│       └── app.js                 # منطق التفاعل والربط مع الـ API
+├── terraform/                     # ملفات البنية التحتية كرمز (Infrastructure as Code)
+├── docker-compose.yml             # بيئة التطوير المحلية
+├── docker-compose.prod.yml        # بيئة الإنتاج المجهزة بالكامل
+├── devops_architecture.png        # مخطط البنية التحتية
+└── README.md                      # توثيق المشروع
 ```
 
 ---
 
-## 🚀 كيفية التشغيل محلياً (بدون Docker)
+## 🚀 طرق التشغيل (Execution Modes)
 
-### 1. المتطلبات الأساسية
-- مثبت **Node.js** (الإصدار 18 أو أحدث).
+### الخيار الأول: التشغيل بواسطة Docker Compose (الموصى به)
 
-### 2. تثبيت التابعين (Dependencies)
-افتح المجلد الرئيسي للمشروع في التيرمينال وشغل الأمر التالي:
+لتشغيل جميع الخدمات (Backend, Frontend, Postgres, Redis) في حاويات معزولة بنقرة واحدة:
 
 ```bash
-cd backend
-npm install
+# تشغيل بيئة الإنتاج
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-### 3. ضبط متغيرات البيئة (Optional / اختياري)
-قم بتعديل ملف `backend/.env` بحسب إعدادات قاعدة البيانات والـ Redis لديك:
-
-```env
-PORT=5000
-
-# إعدادات PostgreSQL
-PGHOST=localhost
-PGPORT=5432
-PGUSER=postgres
-PGPASSWORD=postgres
-PGDATABASE=app_db
-
-# إعدادات Redis
-REDIS_HOST=127.0.0.1
-REDIS_PORT=6379
-REDIS_PASSWORD=
-```
-
-> **ملاحظة**: إذا لم تقم بتشغيل Redis أو PostgreSQL محلياً، سيعمل التطبيق تلقائياً في وضع **Memory Mode** لتجربة الواجهة دون مشاكل.
-
-### 4. تشغيل الخادم
-لتشغيل الخادم والواجهة معاً:
-
-```bash
-cd backend
-npm start
-```
-
-افتح المتصفح وانتقل إلى العنوان:
-[http://localhost:5000](http://localhost:5000)
+افتح المتصفح وانتقل إلى:
+- **الواجهة الأمامية**: [http://localhost:80](http://localhost:80)
+- **الخلفية (API)**: [http://localhost:5000/api/status](http://localhost:5000/api/status)
 
 ---
 
-## 🔌 مسارات الـ REST APIs
+### الخيار الثاني: التشغيل المحلي المباشر (بدون Docker)
 
-| المسار | النوع | الوصف |
+1. **تثبيت التابعيات**:
+   ```bash
+   cd backend
+   npm install
+   ```
+
+2. **تشغيل الخادم**:
+   ```bash
+   npm start
+   ```
+   > **ملاحظة**: في حال عدم تشغيل Redis أو PostgreSQL محلياً، سينتقل التطبيق تلقائياً إلى **Memory Fallback Mode** لتجربة الواجهة بدون مشاكل.
+
+---
+
+## 🔌 مسارات الـ REST API
+
+| المسار | نوع الطلب | الوصف |
 | :--- | :--- | :--- |
 | `/api/status` | `GET` | فحص حالة الاتصال بقواعد البيانات (Redis & PostgreSQL) |
 | `/api/visits` | `GET` | جلب عدد الزيارات الحالي من Redis |
 | `/api/visits/increment` | `POST` | زيادة عدد الزيارات بمقدار 1 في Redis |
-| `/api/users` | `GET` | جلب قائمة كافة المستخدمين المسجلين من PostgreSQL |
-| `/api/users` | `POST` | إضافة مستخدم جديد إلى PostgreSQL (`{ username, email }`) |
+| `/api/users` | `/api/users` | `GET` | جلب كافة المستخدمين المسجلين من PostgreSQL |
+| `/api/users` | `POST` | إضافة مستخدم جديد إلى PostgreSQL |
+
+---
+
+## 📜 الترخيص
+
+تطوير وإعداد معمارية DevOps و DevSecOps لتطبيقات المؤسسات البرمجية.
