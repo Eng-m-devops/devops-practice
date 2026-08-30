@@ -6,7 +6,7 @@ COPY  package*.json ./
 
 COPY  . .
 
-RUN npm ci 
+RUN npm ci --ignore-scripts
 
 
 FROM node:20-alpine AS runner

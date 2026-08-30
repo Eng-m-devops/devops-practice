@@ -263,7 +263,7 @@ body {
   padding: 0.15rem 0.4rem;
   border-radius: 4px;
   font-size: 0.75rem;
-  color: #a5b4fc;
+  color: #c7d2fe;
 }
 
 .icon-badge {
@@ -339,7 +339,7 @@ body {
   border: 1px solid rgba(99, 102, 241, 0.2);
   border-radius: var(--radius-md);
   font-size: 0.82rem;
-  color: #a5b4fc;
+  color: #c7d2fe;
   text-align: center;
 }
 
@@ -485,13 +485,13 @@ body {
 .notification.success {
   background: rgba(16, 185, 129, 0.15);
   border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
+  color: #6ee7b7;
 }
 
 .notification.error {
   background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #f87171;
+  color: #fca5a5;
 }
 
 /* Table Styles */

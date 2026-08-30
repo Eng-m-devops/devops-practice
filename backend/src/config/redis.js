@@ -17,7 +17,7 @@ export const redisClient = createClient({
     connectTimeout: 3000,
     reconnectStrategy: (retries) => {
       if (retries > 5) {
-        return new Error('Redis max retries reached');
+        return false;
       }
       return Math.min(retries * 100, 2000);
     }
@@ -60,7 +60,7 @@ export async function incrementVisits() {
   if (isRedisConnected && redisClient.isOpen) {
     try {
       const count = await redisClient.incr('visits_count');
-      return { count: parseInt(count, 10), source: 'Redis' };
+      return { count: Number.parseInt(count, 10), source: 'Redis' };
     } catch (e) {
       console.warn('Error incrementing Redis visit count:', e.message);
     }
@@ -73,7 +73,7 @@ export async function getVisits() {
   if (isRedisConnected && redisClient.isOpen) {
     try {
       const count = await redisClient.get('visits_count');
-      return { count: count ? parseInt(count, 10) : 0, source: 'Redis' };
+      return { count: count ? Number.parseInt(count, 10) : 0, source: 'Redis' };
     } catch (e) {
       console.warn('Error reading Redis visit count:', e.message);
     }

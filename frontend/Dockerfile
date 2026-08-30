@@ -1,8 +1,11 @@
 FROM nginx:alpine-slim
 
-# نسخ جميع ملفات الفرونت إند مباشرة إلى خادم Nginx
+# Copy Nginx configuration
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY . /usr/share/nginx/html
+
+# Copy explicit frontend web application assets
+COPY index.html style.css /usr/share/nginx/html/
+COPY src/ /usr/share/nginx/html/src/
 
 EXPOSE 80
 

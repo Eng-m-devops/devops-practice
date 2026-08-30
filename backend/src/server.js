@@ -1,9 +1,9 @@
-import fs from 'fs';
+import fs from 'node:fs';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import { pool, initPostgres, getPostgresStatus } from './config/postgres.js';
 import { initRedis, getRedisStatus, incrementVisits, getVisits } from './config/redis.js';
@@ -14,6 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
+app.disable('x-powered-by');
 const PORT = process.env.PORT || 5000;
 
 // Middleware
@@ -125,4 +126,4 @@ async function startServer() {
   });
 }
 
-startServer();
+await startServer();
