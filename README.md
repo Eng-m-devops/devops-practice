@@ -32,9 +32,10 @@
   - **PostgreSQL**: لتخزين بيانات المستخدمين بشكل دائم.
   - **Redis**: لتخزين عداد الزيارات التفاعلي وإدارته بسرعة فائقة.
   - **Memory Fallback Mode**: نمط احتياطي تلقائي يضمن استمرار عمل التطبيق في الذاكرة في حال انقطاع الاتصال بقواعد البيانات دون انهيار الخادم.
-- **الأتمتة والبيئة التحتية كرمز (IaC)**:
+- **الأتمتة والبيئة التحتية كرمز (IaC & Configuration Management)**:
   - **Docker & Docker Compose**: بيئات تطوير وإنتاج معزولة.
-  - **Terraform**: لإدارة البنية التحتية السحابية بشكل مؤتمت (`terraform/`).
+  - **Terraform**: لإدارة البنية التحتية السحابية على AWS (VPC, Subnets, Security Groups, EC2) بشكل مؤتمت (`terraform/`).
+  - **Ansible**: لإدارة التكوين وأتمتة تهيئة الخوادم وتثبيت التبعيات والنشر الآلي (`ansible/`).
 
 ---
 
@@ -44,7 +45,20 @@
 .
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                 # خط البناء والنشر الآلي (GitHub Actions + SonarQube + Trivy)
+│       ├── ci.yml                 # خط البناء والفحص الآلي (SonarQube + Trivy + IaC + Ansible)
+│       └── cd.yml                 # خط النشر المستمر (Continuous Deployment via Ansible)
+├── ansible/                       # أتمتة وإدارة التكوين والنشر بـ Ansible
+│   ├── ansible.cfg                # إعدادات Ansible العامة
+│   ├── inventory/
+│   │   └── hosts.ini              # تعريف الخوادم والمستهدفين
+│   ├── group_vars/
+│   │   └── all.yml                # المتغيرات العامة للنظام والتطبيق
+│   ├── playbooks/
+│   │   ├── site.yml               # ملف الأتمتة الرئيسي (Master Playbook)
+│   │   ├── 01_system_prep.yml     # تجهيز الخادم وتحديث الحزم
+│   │   ├── 02_install_docker.yml  # تثبيت وتجهيز Docker Compose
+│   │   └── 03_deploy_app.yml      # نشر الحاويات والتحقق من الصحة
+│   └── roles/                     # أدوار أتمتة النظام (common, security, docker, app_deploy)
 ├── backend/
 │   ├── Dockerfile                 # بناء حاوية الباك إند (Multi-stage node:20-alpine)
 │   ├── package.json               # حزم وتابعات Node.js
@@ -60,7 +74,12 @@
 │   ├── style.css                  # التنسيقات البصرية العصري المعتمدة على التباين المريح
 │   └── src/
 │       └── app.js                 # منطق التفاعل والربط مع الـ API
-├── terraform/                     # ملفات البنية التحتية كرمز (Infrastructure as Code)
+├── terraform/                     # إدارة البنية التحتية كرمز (AWS VPC, Subnets, SG, EC2)
+│   ├── providers.tf               # إعدادات المزودين (AWS & Random)
+│   ├── variables.tf               # متغيرات البنية التحتية
+│   ├── main.tf                    # موارد AWS الأساسية
+│   ├── outputs.tf                 # مخرجات البنية التحتية (IPs, URLs)
+│   └── terraform.tfvars.example   # نموذج المتغيرات
 ├── docker-compose.yml             # بيئة التطوير المحلية
 ├── docker-compose.prod.yml        # بيئة الإنتاج المجهزة بالكامل
 ├── devops_architecture.png        # مخطط البنية التحتية
@@ -69,11 +88,35 @@
 
 ---
 
-## 🚀 طرق التشغيل (Execution Modes)
+## 🚀 طرق التشغيل والاستخدام (Execution Modes)
 
-### الخيار الأول: التشغيل بواسطة Docker Compose (الموصى به)
+### الخيار الأول: التشغيل بواسطة Ansible (الأتمتة الكاملة والنشر)
 
-لتشغيل جميع الخدمات (Backend, Frontend, Postgres, Redis) في حاويات معزولة بنقرة واحدة:
+لإعداد الخوادم وتجهيز البيئة الأمنيّة وتثبيت Docker ونشر التطبيق بـ Playbook واحد:
+
+```bash
+cd ansible
+ansible-playbook playbooks/site.yml
+```
+
+---
+
+### الخيار الثاني: إدارة البنية التحتية بواسطة Terraform (Provisioning)
+
+لإنشاء وتوفير الخوادم والشبكة ومجموعات الأمان تلقائيًا على AWS:
+
+```bash
+cd terraform
+terraform init
+terraform plan
+terraform apply
+```
+
+---
+
+### الخيار الثالث: التشغيل المباشر بواسطة Docker Compose
+
+لتشغيل جميع الخدمات (Backend, Frontend, Postgres, Redis) محلياً أو على الخادم:
 
 ```bash
 # تشغيل بيئة الإنتاج
@@ -86,7 +129,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 ---
 
-### الخيار الثاني: التشغيل المحلي المباشر (بدون Docker)
+### الخيار الرابع: التشغيل المحلي المباشر (بدون Docker)
 
 1. **تثبيت التابعيات**:
    ```bash
@@ -109,7 +152,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 | `/api/status` | `GET` | فحص حالة الاتصال بقواعد البيانات (Redis & PostgreSQL) |
 | `/api/visits` | `GET` | جلب عدد الزيارات الحالي من Redis |
 | `/api/visits/increment` | `POST` | زيادة عدد الزيارات بمقدار 1 في Redis |
-| `/api/users` | `/api/users` | `GET` | جلب كافة المستخدمين المسجلين من PostgreSQL |
+| `/api/users` | `GET` | جلب كافة المستخدمين المسجلين من PostgreSQL |
 | `/api/users` | `POST` | إضافة مستخدم جديد إلى PostgreSQL |
 
 ---
@@ -117,3 +160,4 @@ docker compose -f docker-compose.prod.yml up -d --build
 ## 📜 الترخيص
 
 تطوير وإعداد معمارية DevOps و DevSecOps لتطبيقات المؤسسات البرمجية.
+

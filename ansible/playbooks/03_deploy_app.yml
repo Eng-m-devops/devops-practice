@@ -1,0 +1,6 @@
+---
+- name: Deploy Enterprise DevOps Application Stack
+  hosts: webservers
+  become: yes
+  roles:
+    - app_deploy

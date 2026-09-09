@@ -1,0 +1,5 @@
+---
+# Master Orchestration Playbook for Enterprise DevOps Architecture
+- import_playbook: 01_system_prep.yml
+- import_playbook: 02_install_docker.yml
+- import_playbook: 03_deploy_app.yml

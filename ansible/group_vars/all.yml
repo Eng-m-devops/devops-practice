@@ -1,0 +1,28 @@
+---
+# Global environment variables for Ansible deployment
+app_name: enterprise-devops-app
+app_env: production
+deploy_dir: /opt/enterprise-devops
+
+# Application Ports
+frontend_port: 80
+backend_port: 5000
+postgres_port: 5432
+redis_port: 6379
+
+# Database & Credentials
+postgres_db: devops_db
+postgres_user: devops_user
+postgres_password: DevSecOpsSecurePass2026!
+
+# System & Docker Settings
+docker_users:
+  - ubuntu
+  - ansible
+
+# Firewall allowed ports
+firewall_allowed_ports:
+  - 22
+  - 80
+  - 443
+  - 5000

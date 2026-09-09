@@ -1,0 +1,49 @@
+---
+- name: Ensure target deployment directory exists
+  file:
+    path: "{{ deploy_dir }}"
+    state: directory
+    mode: '0755'
+
+- name: Render .env configuration file from template
+  template:
+    src: env.j2
+    dest: "{{ deploy_dir }}/.env"
+    mode: '0600'
+
+- name: Copy docker-compose.prod.yml to target directory
+  copy:
+    src: "{{ playbook_dir }}/../../docker-compose.prod.yml"
+    dest: "{{ deploy_dir }}/docker-compose.prod.yml"
+    mode: '0644'
+
+- name: Copy backend files to target server
+  copy:
+    src: "{{ playbook_dir }}/../../backend"
+    dest: "{{ deploy_dir }}/"
+    mode: '0755'
+
+- name: Copy frontend files to target server
+  copy:
+    src: "{{ playbook_dir }}/../../frontend"
+    dest: "{{ deploy_dir }}/"
+    mode: '0755'
+
+- name: Deploy services using Docker Compose
+  command: docker compose -f docker-compose.prod.yml up -d --build
+  args:
+    chdir: "{{ deploy_dir }}"
+
+- name: Wait for Backend API service to be healthy
+  uri:
+    url: "http://localhost:{{ backend_port }}/api/status"
+    method: GET
+    status_code: 200
+  register: api_check
+  until: api_check.status == 200
+  retries: 10
+  delay: 3
+
+- name: Display deployment success notification
+  debug:
+    msg: "Enterprise DevOps Application deployed successfully! Backend API returned status 200 OK."

@@ -1,0 +1,7 @@
+---
+- name: System Preparation and Base Security Hardening
+  hosts: webservers
+  become: yes
+  roles:
+    - common
+    - security

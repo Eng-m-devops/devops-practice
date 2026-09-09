@@ -1,0 +1,6 @@
+---
+- name: Install and Configure Docker Engine & Compose
+  hosts: webservers
+  become: yes
+  roles:
+    - docker

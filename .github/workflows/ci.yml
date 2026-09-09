@@ -8,31 +8,78 @@ on:
     branches:
       - main
 
-
 jobs:
+  # 1. فحص البنية التحتية (Terraform IaC)
+  infrastructure-ci:
+    name: Infrastructure Validation (Terraform)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Check Terraform Formatting
+        run: terraform fmt -check
+        working-directory: ./terraform
+
+      - name: Initialize Terraform
+        run: terraform init -backend=false
+        working-directory: ./terraform
+
+      - name: Validate Terraform Code
+        run: terraform validate
+        working-directory: ./terraform
+
+  # 2. فحص سكريبتات الأتمتة (Ansible Syntax Check)
+  ansible-ci:
+    name: Ansible Playbooks Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v4.2.2
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install Ansible
+        run: pip install ansible-core
+
+      - name: Validate Ansible Playbook Syntax
+        run: ansible-playbook playbooks/site.yml --syntax-check
+        working-directory: ./ansible
+
+  # 3. تحليل الكود الساكن والجودة (SonarQube)
   code-analysis:
+    name: Code Quality & Security (SonarQube)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository Code
         uses: actions/checkout@v4.2.2
         with:
           fetch-depth: 0
-        
+
       - name: Set up JDK 21
         uses: actions/setup-java@v4.5.0
         with:
           distribution: 'temurin'
-          java-version: '21'  
-      
+          java-version: '21'
+
       - name: Run SonarQube Analysis
         uses: SonarSource/sonarqube-scan-action@v3.0.0
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}     
-  
-  # بناء واختبار الباك إند
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+
+  # 4. بناء واختبار الباك إند وفحص الحاوية (Backend CI)
   backend-ci:
-    needs: code-analysis
+    name: Backend Build & Security Scan
+    needs: [infrastructure-ci, ansible-ci, code-analysis]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -42,6 +89,7 @@ jobs:
         uses: docker/setup-buildx-action@v3.7.1
 
       - name: Login to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: docker/login-action@v3.3.0
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
@@ -63,8 +111,10 @@ jobs:
           format: 'table'
           severity: 'CRITICAL,HIGH'
 
-  # بناء واختبار الفرونت إند (يعمل بالتوازي مع الباك إند)
+  # 5. بناء واختبار الفرونت إند (Frontend CI)
   frontend-ci:
+    name: Frontend Build
+    needs: [infrastructure-ci, ansible-ci]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code

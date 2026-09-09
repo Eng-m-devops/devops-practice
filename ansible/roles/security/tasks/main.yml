@@ -1,0 +1,34 @@
+---
+- name: Allow defined ports in UFW firewall
+  ufw:
+    rule: allow
+    port: "{{ item | string }}"
+    proto: tcp
+  loop: "{{ firewall_allowed_ports }}"
+
+- name: Set UFW default incoming policy to deny
+  ufw:
+    direction: incoming
+    policy: deny
+
+- name: Set UFW default outgoing policy to allow
+  ufw:
+    direction: outgoing
+    policy: allow
+
+- name: Enable UFW firewall service
+  ufw:
+    state: enabled
+    logging: 'on'
+
+- name: Apply Kernel Sysctl Hardening Parameters
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  loop:
+    - { name: 'net.ipv4.tcp_syncookies', value: '1' }
+    - { name: 'net.ipv4.conf.all.accept_redirects', value: '0' }
+    - { name: 'net.ipv4.conf.all.send_redirects', value: '0' }
+    - { name: 'net.ipv4.conf.all.rp_filter', value: '1' }
