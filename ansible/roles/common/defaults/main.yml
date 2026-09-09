@@ -1,0 +1,4 @@
+---
+deploy_dir: /opt/enterprise-devops
+app_name: enterprise-devops-app
+app_env: production
