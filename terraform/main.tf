@@ -1,5 +1,10 @@
 locals {
   app_name = "${var.project_name}-${var.environment}"
+  ssh_key_content = var.ssh_public_key != "" ? var.ssh_public_key : (
+    fileexists("~/.ssh/id_rsa.pub") ? file("~/.ssh/id_rsa.pub") : (
+      fileexists("~/.ssh/id_ed25519.pub") ? file("~/.ssh/id_ed25519.pub") : ""
+    )
+  )
 }
 
 # 1. VPC Configuration
@@ -127,9 +132,9 @@ data "aws_ami" "ubuntu" {
 
 # 7. Key Pair (Optional conditionally created)
 resource "aws_key_pair" "deployer" {
-  count      = var.ssh_public_key != "" ? 1 : 0
+  count      = local.ssh_key_content != "" ? 1 : 0
   key_name   = "${local.app_name}-key"
-  public_key = var.ssh_public_key
+  public_key = local.ssh_key_content
 }
 
 # 8. EC2 Instance
@@ -138,7 +143,7 @@ resource "aws_instance" "app_server" {
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.app_sg.id]
-  key_name               = var.ssh_public_key != "" ? aws_key_pair.deployer[0].key_name : null
+  key_name               = local.ssh_key_content != "" ? aws_key_pair.deployer[0].key_name : null
 
   root_block_device {
     volume_size           = 20
