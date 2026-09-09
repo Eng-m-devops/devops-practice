@@ -44,6 +44,7 @@ jobs:
       - name: Execute Ansible Deployment Playbook
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_SSH_COMMON_ARGS: "-o StrictHostKeyChecking=no -o PubkeyAcceptedKeyTypes=+ssh-rsa -o HostKeyAlgorithms=+ssh-rsa"
           TARGET_HOST: ${{ secrets.SERVER_HOST }}
           SSH_USER: ${{ secrets.SERVER_USER }}
         run: |
