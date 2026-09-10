@@ -35,12 +35,12 @@ services:
     build: ./backend
     container_name: container-backend
     env_file:
-      - ./backend/.env
+      - .env
     environment:
       - PGHOST=database
       - REDIS_HOST=redis
-    expose:
-      - "5000"
+    ports:
+      - "5000:5000"
     healthcheck:
       test:
         [
